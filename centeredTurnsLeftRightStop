@@ -1,0 +1,173 @@
+#define L_sensor A0 // Left sensor
+#define R_sensor A1 // Right sensor
+#define F_sensor A3 // Forward sensor
+
+const int Right_motors_pin1 = 12; // Motor Pins
+const int Right_motors_pin2 = 11; 
+const int Right_motors_pin3 = 10;  
+const int Left_motors_pin1 = 4;
+const int Left_motors_pin2 = 3;  
+const int Left_motors_pin3 = 6;  
+
+float volts1 = 0; //Data from sensors
+float volts2 = 0;
+float volts3 = 0;
+
+int L_distance = 0; // Measuring the distance
+int R_distance = 0;
+int F_distance = 0;
+
+  int flt_L_dist = 0;
+  int L_dist_filter = 0;
+  int flt_R_dist = 0;
+  int R_dist_filter = 0;
+
+void setup() {
+  Serial.begin(9600); // start the serial port
+}
+
+void loop() {
+// delay(1);
+  for (int i = 0; i<3; i++){
+      volts1 = analogRead(L_sensor)*0.0048828125;  // value from L_sensor * (5/1024)
+  L_distance = 13*pow(volts1, -1); // worked out from datasheet graph
+  if (L_distance > 60)L_distance = 60;
+  L_dist_filter = L_dist_filter + L_distance;
+  Serial.print ("sum of three ");
+    Serial.println (i);
+  Serial.println (L_dist_filter);
+  }
+  flt_L_dist = L_dist_filter / 3;
+  Serial.print ("filtered left sensor ");
+  Serial.println (flt_L_dist);
+  
+  L_dist_filter = 0;
+
+
+    for (int i = 0; i<3; i++){
+      volts2 = analogRead(R_sensor)*0.0048828125;  // value from R_sensor * (5/1024)
+  R_distance = 13*pow(volts2, -1); // worked out from datasheet graph
+  if (R_distance > 60)R_distance = 60;
+  R_dist_filter = R_dist_filter + R_distance;
+  Serial.print ("sum of three ");
+    Serial.println (i);
+  Serial.println (R_dist_filter);
+  }
+  flt_R_dist = R_dist_filter / 3;
+  Serial.print ("filtered right sensor ");
+  Serial.println (flt_R_dist);
+  
+  R_dist_filter = 0;
+
+  
+
+
+  volts3 = analogRead(F_sensor)*0.0048828125;  // value from F_sensor * (5/1024)
+  F_distance = 13*pow(volts3, -1); // worked out from datasheet graph
+  if (F_distance > 60)F_distance = 60;
+
+    Serial.print(flt_L_dist);
+    Serial.print(" ");// print the distance
+    Serial.print(flt_R_dist);
+    Serial.print(" ");// print the distance
+    Serial.println(F_distance);   // print the distance
+
+    float test1 = flt_L_dist-flt_R_dist;
+    float test2 = flt_L_dist+flt_R_dist;
+    float shift = test1/test2;
+    shift = abs(shift);
+    Serial.println(test1);
+    Serial.println(test2);
+    Serial.println(shift);
+
+
+
+if (shift>0.2){
+  if (flt_L_dist > flt_R_dist){
+    Centering_left ();
+    }
+    else Centering_right ();
+}
+    
+
+else {
+  FWD (155);
+}
+     if (F_distance<10){
+      STOP();
+    }
+    
+   /* if ((F_distance<20) && (flt_R_dist=60) && (flt_L_dist<50) ){
+      TURNRIGHT();
+    }
+   */ 
+    if ((F_distance<20) && (flt_R_dist<50) && (flt_L_dist>50) ){
+      TURNLEFT();
+    }
+
+}
+
+void FWD(int a){
+  
+    analogWrite(Left_motors_pin3,a);  //Send instructions to Forward motor pin
+    analogWrite(Left_motors_pin1,0);  //Send instructions to Forward motor pin
+    analogWrite(Left_motors_pin2,255);  //Send instructions to Forward motor pin
+    
+    analogWrite(Right_motors_pin3,a);  //Send instructions to Forward motor pin
+    analogWrite(Right_motors_pin1,0);  //Send instructions to Forward motor pin
+    analogWrite(Right_motors_pin2,255);  //Send instructions to Forward motor pin
+}
+
+void TURNRIGHT(){
+  analogWrite(Left_motors_pin3,255);  //Send instructions to Forward motor pin
+    analogWrite(Left_motors_pin1,0);  //Send instructions to Forward motor pin
+    analogWrite(Left_motors_pin2,255);  //Send instructions to Forward motor pin
+    
+    analogWrite(Right_motors_pin3,90);  //Send instructions to Forward motor pin
+    analogWrite(Right_motors_pin1,0);  //Send instructions to Forward motor pin
+    analogWrite(Right_motors_pin2,255);  //Send instructions to Forward motor pin
+}
+
+void TURNLEFT(){
+  analogWrite(Left_motors_pin3,90);  //Send instructions to Forward motor pin
+    analogWrite(Left_motors_pin1,0);  //Send instructions to Forward motor pin
+    analogWrite(Left_motors_pin2,255);  //Send instructions to Forward motor pin
+    
+    analogWrite(Right_motors_pin3,255);  //Send instructions to Forward motor pin
+    analogWrite(Right_motors_pin1,0);  //Send instructions to Forward motor pin
+    analogWrite(Right_motors_pin2,255);  //Send instructions to Forward motor pin
+}
+
+void STOP(){
+ analogWrite(Left_motors_pin3,0);  //Send instructions to Forward motor pin
+    analogWrite(Left_motors_pin1,0);  //Send instructions to Forward motor pin
+    analogWrite(Left_motors_pin2,0);  //Send instructions to Forward motor pin
+    
+    analogWrite(Right_motors_pin3,0);  //Send instructions to Forward motor pin
+    analogWrite(Right_motors_pin1,0);  //Send instructions to Forward motor pin
+    analogWrite(Right_motors_pin2,0);  //Send instructions to Forward motor pin
+}
+
+void Centering_left(){
+  
+    analogWrite(Left_motors_pin3,70);  //Send instructions to Forward motor pin
+    analogWrite(Left_motors_pin1,0);  //Send instructions to Forward motor pin
+    analogWrite(Left_motors_pin2,255);  //Send instructions to Forward motor pin
+    
+    analogWrite(Right_motors_pin3,155);  //Send instructions to Forward motor pin
+    analogWrite(Right_motors_pin1,0);  //Send instructions to Forward motor pin
+    analogWrite(Right_motors_pin2,255);  //Send instructions to Forward motor pin
+    delay(2);
+    }
+
+void Centering_right(){
+  
+    analogWrite(Left_motors_pin3,155);  //Send instructions to Forward motor pin
+    analogWrite(Left_motors_pin1,0);  //Send instructions to Forward motor pin
+    analogWrite(Left_motors_pin2,255);  //Send instructions to Forward motor pin
+    
+    analogWrite(Right_motors_pin3,70);  //Send instructions to Forward motor pin
+    analogWrite(Right_motors_pin1,0);  //Send instructions to Forward motor pin
+    analogWrite(Right_motors_pin2,255);  //Send instructions to Forward motor pin
+    delay(2);
+}
